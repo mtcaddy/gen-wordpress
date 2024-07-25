@@ -52,7 +52,7 @@ This repository contains the configuration and setup for the Global Evangelistic
 
 4. Deploy the stack:
    ```bash
-   WP_NODE_HOSTNAME=your_node_hostname docker stack deploy -c stack.yml gen
+   WP_NODE_HOSTNAME=master-3 docker stack deploy -c stack.yml gen
    ```
 
 ## Configuration

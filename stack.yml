@@ -6,8 +6,17 @@ services:
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
       WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/wp_db_password
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_MEMORY_LIMIT', '256M');
+        define('WP_MAX_MEMORY_LIMIT', '256M');
+        define('WP_POST_REVISIONS', 3);
+        define('MEDIA_TRASH', true);
+        define('EMPTY_TRASH_DAYS', 7);
+        define('WP_MAX_UPLOAD_SIZE', '32M');
+    secrets:
+      - wp_db_password
     networks:
       - traefik-public
       - wp_internal
@@ -33,10 +42,13 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: wordpress
       MYSQL_USER: wordpress
-      MYSQL_PASSWORD: ${WP_DB_PASSWORD}
+      MYSQL_PASSWORD_FILE: /run/secrets/wp_db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    secrets:
+      - db_root_password
+      - wp_db_password
     networks:
       - wp_internal
     deploy:
@@ -54,3 +66,9 @@ networks:
   wp_internal:
     driver: overlay
     internal: true
+
+secrets:
+  wp_db_password:
+    external: true
+  db_root_password:
+    external: true
