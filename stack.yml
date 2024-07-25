@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    volumes:
+      - wp_data:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_DB_NAME: wordpress
+    networks:
+      - traefik-public
+      - wp_internal
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == ${WP_NODE_HOSTNAME}
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.gen-wp.rule=Host(`gen.my.kipya-connect.com`)
+        - traefik.http.routers.gen-wp.entrypoints=websecure
+        - traefik.http.routers.gen-wp.tls=true
+        - traefik.http.services.gen-wp.loadbalancer.server.port=80
+        - traefik.docker.network=traefik-public
+
+  db:
+    image: mariadb:10.5
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: ${WP_DB_PASSWORD}
+    networks:
+      - wp_internal
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == ${WP_NODE_HOSTNAME}
+
+volumes:
+  wp_data:
+  db_data:
+
+networks:
+  traefik-public:
+    external: true
+  wp_internal:
+    driver: overlay
+    internal: true
