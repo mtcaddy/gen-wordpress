@@ -25,16 +25,17 @@ services:
         constraints:
           - node.hostname == ${WP_NODE_HOSTNAME}
       labels:
-        - traefik.backend.loadbalancer.swarm=true
-        - traefik.frontend.rule=Host:gen.my.kipya-connect.com
-        - traefik.enable=true
-        - traefik.port=80
-        - traefik.tags=traefik-public
-        - traefik.docker.network=traefik-public
-        - traefik.redirectorservice.frontend.entryPoints=http,https
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        - traefik.webservice.frontend.entryPoints=https,http
-        - traefik.backend.loadbalancer.stickiness=true
+        - "traefik.enable=true"
+        - "traefik.http.routers.gen-wp.rule=Host(`gen.my.kipya-connect.com`)"
+        - "traefik.http.routers.gen-wp.entrypoints=websecure"
+        - "traefik.http.routers.gen-wp.tls=true"
+        - "traefik.http.services.gen-wp.loadbalancer.server.port=80"
+        - "traefik.http.routers.gen-wp-http.rule=Host(`gen.my.kipya-connect.com`)"
+        - "traefik.http.routers.gen-wp-http.entrypoints=web"
+        - "traefik.http.routers.gen-wp-http.middlewares=https-redirect"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+        - "traefik.docker.network=traefik-public"
 
   db:
     image: mariadb:10.5
